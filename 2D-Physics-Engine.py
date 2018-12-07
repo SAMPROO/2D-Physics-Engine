@@ -12,7 +12,7 @@ axis = plt.axes(xlim=(axis_min, axis_max), ylim=(axis_min, axis_max))
 plt.gca().set_aspect(1)
 
 #Gravity and time step
-G = 9.80665
+G = 0 #9.80665
 TSTEP = 0.0009
 t = TSTEP
 
@@ -22,22 +22,24 @@ y_axis = 1
 z_axis = 2
 
 #Initial velocity and angle
-v0 = 70
-v1 = 30 
-alpha_deg = 0
+v0 = 10.0
+v1 = 49.0 
+alpha_deg_0 = 0
+alpha_deg_1 = 180
 
 #Degrees to radians
-alpha_rad = alpha_deg/180 * np.pi
+alpha_rad_0 = alpha_deg_0/180 * np.pi
+alpha_rad_1 = alpha_deg_1/180 * np.pi
 
 #Velocity to x and y components
 velocity_0 = [
-    v0 * np.cos(alpha_rad),
-    v0 * np.sin(alpha_rad),
+    v0 * np.cos(alpha_rad_0),
+    v0 * np.sin(alpha_rad_0),
     0.0]
 
 velocity_1 = [
-    v1 * np.cos(alpha_rad),
-    v1 * np.sin(alpha_rad),
+    v1 * np.cos(alpha_rad_1),
+    v1 * np.sin(alpha_rad_1),
     0.0]
 
 velocities = [velocity_0, velocity_1]
@@ -47,8 +49,8 @@ angle_1 = [0.0]
 
 angles = [angle_0, angle_1]
 
-angular_velocity_0 = [0.0, 0.0, -5.0]
-angular_velocity_1 = [0.0, 0.0, 2.0]
+angular_velocity_0 = [0.0, 0.0, 0.0]
+angular_velocity_1 = [0.0, 0.0, 15.7]
 
 angular_velocities = [angular_velocity_0, angular_velocity_1]
 
@@ -91,12 +93,12 @@ yNorm_roof = [0, -1, 0]
 xNorm_rWall = [-1, 0, 0]
 xNorm_lWall = [1, 0, 0]
 
-l = 10.0
+l = 10
 #Giving polygon points and center of mass
 polygon_vertex = np.array([[10.0, 10.0], [10.0, 20.0], [20.0, 20.0], [20.0, 10.0]])
 
 #Giving polygon points and center of mass
-polygon_vertex_2 = np.array([[80.0, 80.0], [80.0, 90.0], [90.0, 90.0], [90.0, 80.0]])
+polygon_vertex_2 = np.array([[30.0, 10.0], [30.0, 20.0], [40.0, 20.0], [40.0, 10.0]])
 
 polygons = [polygon_vertex, polygon_vertex_2]
 polygons_cm = []
@@ -208,8 +210,6 @@ def animate(i):
 
     index = 0
 
-    print(collision)
-
     #Polygons new center of mass location
     for cm, velocity in zip(polygons_cm, velocities) :
         cm[x_axis] += velocity[x_axis] * t
@@ -222,6 +222,91 @@ def animate(i):
             #Polygon point new location
             i[x_axis] = j[x_axis] * np.cos(ang) - j[y_axis] * np.sin(ang) + cm[x_axis]
             i[y_axis] = j[x_axis] * np.sin(ang) + j[y_axis] * np.cos(ang) + cm[y_axis]
+
+    ''' for i in range(len(polygons_cm)):
+        
+
+        x_loc_0 = polygons_cm[i][x_axis]
+        y_loc_0 = polygons_cm[i][y_axis]
+
+        if i + 1 < len(polygons_cm):
+            x_loc_1 = polygons_cm[i + 1][x_axis]
+            y_loc_1 = polygons_cm[i + 1][y_axis]
+        else:
+            x_loc_1 = polygons_cm[0][x_axis]
+            y_loc_1 = polygons_cm[0][y_axis]
+           
+
+        if i + 1 < len(polygons_cm):
+            x_distance = x_loc_1 - x_loc_0
+            y_distance = y_loc_1 - y_loc_0
+        else:
+            x_distance = x_loc_0 - x_loc_1
+            y_distance = y_loc_0 - y_loc_1
+
+        polygon_width = l / 2
+        
+        x_gap_between = x_distance - polygon_width * 2
+        y_gap_between = y_distance - polygon_width * 2
+        print("y: ", x_gap_between)
+        print("x: ", y_gap_between)
+        if x_gap_between <= 0 and y_gap_between <= 0:
+            print("COLLISION BETWEEN OBJECTS") '''
+
+    for i in range(len(polygons)):
+
+        if i < len(polygons) - 1:
+            
+            for k in range(len(polygons[i + 1]) - 1):
+                
+                collision_check_list = []
+                collision = False
+
+                for j in range(len(polygons[i])):
+
+                    if j < len(polygons[i]) - 1:
+
+                        vector = [
+                            polygons[i][j + 1][x_axis] - polygons[i][j][x_axis],
+                            polygons[i][j + 1][y_axis] - polygons[i][j][y_axis]]
+
+                        vector_point = [
+                            polygons[i + 1][k][x_axis] - polygons[i][j][x_axis],
+                            polygons[i + 1][k][y_axis] - polygons[i][j][y_axis]]
+                    else:
+                        vector = [
+                            polygons[i][0][x_axis] - polygons[i][len(polygons[i]) - 1][x_axis],
+                            polygons[i][0][y_axis] - polygons[i][len(polygons[i]) - 1][y_axis]]
+
+                        vector_point = [
+                            polygons[i + 1][k][x_axis] - polygons[i][len(polygons[i]) - 1][x_axis],
+                            polygons[i + 1][k][y_axis] - polygons[i][len(polygons[i]) - 1][y_axis]]
+
+                    crossP_vector_vectorPoint = np.cross(vector, vector_point)
+
+                    #Add result to collision check list
+                    if crossP_vector_vectorPoint < 0.0:
+
+                        collision_check_list.append(1)
+                    else:
+                        collision_check_list.append(0)
+                    
+                    #Break if cross products are not either all >0 or <0
+                    if(len(set(collision_check_list)) != 1):
+                        collision = False
+                        break
+                
+                #If all values in collisipon check list are equal then collision has occured
+                if(len(set(collision_check_list)) == 1):
+                    collision = True
+                else:
+                    collisiton = False
+
+                #Collision calculation
+                if collision is True:
+                    print("++++++++++++++COLLISION WITH OBJECT")
+                else:
+                    print("--------------NO COLLISION")
 
     for polygon, cm, velocity, angular_vel, ang in zip(polygons, polygons_cm, velocities, angular_velocities, angles):
 
@@ -250,6 +335,30 @@ def animate(i):
             crossP_hit_vector_roof = np.cross(hit_point_vector, yNorm_roof)
             crossP_hit_vector_rWall = np.cross(hit_point_vector, xNorm_rWall)
             crossP_hit_vector_lWall = np.cross(hit_point_vector, xNorm_lWall)
+
+
+            
+                        
+
+                    
+            ''' for k in range(len(polygons[i + 1])):
+
+                if j < len(polygons[i + 1]) - 1: 
+
+                    vector_point = [
+                        polygons[i + 1][k][x_axis] - polygons[i][j][x_axis],
+                        polygons[i + 1][k][y_axis] - polygons[i][j][y_axis]]
+                else:
+                    vector_point = [
+                        polygons[i + 1][k][x_axis] - polygons[i][j][x_axis],
+                        polygons[i + 1][k][y_axis] - polygons[i][j][y_axis]] '''
+
+                    
+                    
+
+                    
+            
+                
 
             #Collision with RIGHT WALL
             if(i[x_axis] > axis_max and dot_hit_vel_xNorm_rWall < 0):
@@ -311,6 +420,8 @@ def animate(i):
                     ang=ang)
                 
                 collision = True
+
+            
 
         #When collision has happened the results determine the new parameters
         if  collision is True:
