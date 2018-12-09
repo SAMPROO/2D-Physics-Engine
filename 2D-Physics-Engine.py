@@ -54,39 +54,11 @@ angular_velocity_1 = [0.0, 0.0, 3.7]
 
 angular_velocities = [angular_velocity_0, angular_velocity_1]
 
-
 #
 bounce = 0.5
 friction = 0.5
 mass = 0.1
 momentum = np.power(1.0, 4)/12
-
-#Initial 
-#angle = 0
-
-
-
-""" #Initial velocity and angle
-v0 = random.randint(0, 100)
-alpha_deg = random.randint(0, 360)
-
-#Degrees to radians
-alpha_rad = alpha_deg/180 * np.pi
-
-#Velocity to x and y components
-velocity = [
-    v0 * np.cos(alpha_rad),
-    v0 * np.sin(alpha_rad),
-    0.0]
-
-#
-e = random.random()
-mass = random.uniform(1.0, 20.0)
-momentum = mass * np.power(5, 2)
-
-#Initial 
-angle = 0
-angular_velocity = [0.0, 0.0, random.uniform(0.0, 5.0)] """
 
 #Edge normal vectors
 yNorm_floor = [0, 1, 0]
@@ -220,37 +192,6 @@ def animate(i):
             #Polygon point new location
             i[x_axis] = j[x_axis] * np.cos(ang) - j[y_axis] * np.sin(ang) + cm[x_axis]
             i[y_axis] = j[x_axis] * np.sin(ang) + j[y_axis] * np.cos(ang) + cm[y_axis]
-
-    ''' for i in range(len(polygons_cm)):
-        
-
-        x_loc_0 = polygons_cm[i][x_axis]
-        y_loc_0 = polygons_cm[i][y_axis]
-
-        if i + 1 < len(polygons_cm):
-            x_loc_1 = polygons_cm[i + 1][x_axis]
-            y_loc_1 = polygons_cm[i + 1][y_axis]
-        else:
-            x_loc_1 = polygons_cm[0][x_axis]
-            y_loc_1 = polygons_cm[0][y_axis]
-           
-
-        if i + 1 < len(polygons_cm):
-            x_distance = x_loc_1 - x_loc_0
-            y_distance = y_loc_1 - y_loc_0
-        else:
-            x_distance = x_loc_0 - x_loc_1
-            y_distance = y_loc_0 - y_loc_1
-
-        polygon_width = l / 2
-        
-        x_gap_between = x_distance - polygon_width * 2
-        y_gap_between = y_distance - polygon_width * 2
-        print("y: ", x_gap_between)
-        print("x: ", y_gap_between)
-        if x_gap_between <= 0 and y_gap_between <= 0:
-            print("COLLISION BETWEEN OBJECTS") '''
-                    
 
     for polygon, cm, velocity, angular_vel, ang in zip(polygons, polygons_cm, velocities, angular_velocities, angles):
 
@@ -452,24 +393,6 @@ def animate(i):
                     #Index for which polygon side is closest to colliding point
                     min_value_index = distance.index(min(distance))
 
-                    #Move collision to vector
-                    move_by = collision_vector[min_value_index]
-
-                    ''' print("polygon before: ", polygons[k])
-
-                    for move in polygons[k]:
-                        move[x_axis] = move[x_axis] + move_by[x_axis] + 0.01
-                        move[y_axis] = move[y_axis] + move_by[y_axis] + 0.01
-
-                    print("polygon after: ", polygons[k])
-
-                    print("polygon cm before: ", polygons_cm[k])
-
-                    polygons_cm[k][x_axis] = polygons_cm[k][x_axis] + move_by[x_axis]
-                    polygons_cm[k][y_axis] = polygons_cm[k][y_axis] + move_by[y_axis]
-
-                    print("polygon cm after: ", polygons_cm[k]) '''
-
                     #Polygon side vector that is getting collided with
                     vector = vectors[min_value_index]
 
@@ -529,13 +452,6 @@ def animate(i):
                     velocities[k][x_axis] -= impulse/mass * normal_unit_vector[x_axis]
                     velocities[k][y_axis] -= impulse/mass * normal_unit_vector[y_axis]
 
-                    #Change speed to opposite
-                    ''' velocities[i][x_axis] *= -1
-                    velocities[i][y_axis] *= -1
-                    
-                    velocities[k][x_axis] *= -1
-                    velocities[k][y_axis] *= -1 '''
-
                     angular_velocities[i][z_axis] += impulse/momentum * (vector_cm_hitpoint_i[x_axis] * normal_unit_vector[y_axis] - vector_cm_hitpoint_i[y_axis] * normal_unit_vector[x_axis])
                     angular_velocities[k][z_axis] -= impulse/momentum * (vector_cm_hitpoint_k[x_axis] * normal_unit_vector[y_axis] - vector_cm_hitpoint_k[y_axis] * normal_unit_vector[x_axis])
                     
@@ -548,7 +464,6 @@ def animate(i):
 
     return objects
         
-
 # Add labels to coordinates
 plt.xlabel("x (m)")
 plt.ylabel("y (m)")
