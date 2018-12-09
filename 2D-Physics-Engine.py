@@ -338,7 +338,6 @@ def animate(i):
                     angular_v=angular_vel,
                     ang=ang)
             
-
                 collision = True
 
             
@@ -347,7 +346,7 @@ def animate(i):
         if  collision is True:
         
             velocity = result[0]
-            velocity[x_axis] -= friction * mass * G
+            #velocity[x_axis] -= friction * mass * G
             velocity[y_axis] -= G*t
             angular_vel = result[1]
             ang = result[2]
@@ -355,7 +354,7 @@ def animate(i):
         else:
 
             #angular_vel[z_axis] = angular_vel[z_axis]
-            velocity[x_axis] -= friction * mass * G * t
+            velocity[x_axis] = velocity[x_axis]
             velocity[y_axis] -= G*t
             ang[0] += angular_vel[z_axis] * t
 
