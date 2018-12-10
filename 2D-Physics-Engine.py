@@ -5,7 +5,7 @@ import random
 
 #Set coordinates and aspect ratio
 fig = plt.figure()
-fig.set_dpi(100)
+fig.set_dpi(150)
 axis_max = 10
 axis_min = 0
 axis = plt.axes(xlim=(axis_min, axis_max), ylim=(axis_min, axis_max))
@@ -21,44 +21,19 @@ x_axis = 0
 y_axis = 1
 z_axis = 2
 
-#Initial velocity and angle
-v0 = 40.0
-v1 = 40.0 
-alpha_deg_0 = 180
-alpha_deg_1 = 90
+velocities = []
 
-#Degrees to radians
-alpha_rad_0 = alpha_deg_0/180 * np.pi
-alpha_rad_1 = alpha_deg_1/180 * np.pi
+angles = []
 
-#Velocity to x and y components
-velocity_0 = [
-    v0 * np.cos(alpha_rad_0),
-    v0 * np.sin(alpha_rad_0),
-    0.0]
+angular_velocities = []
 
-velocity_1 = [
-    v1 * np.cos(alpha_rad_1),
-    v1 * np.sin(alpha_rad_1),
-    0.0]
+bounces = []
 
-velocities = [velocity_0, velocity_1]
+masses = []
 
-angle_0 = [0.0]
-angle_1 = [0.0]
+momentums_of_inertia = []
 
-angles = [angle_0, angle_1]
-
-angular_velocity_0 = [0.0, 0.0, 9.0]
-angular_velocity_1 = [0.0, 0.0, 3.7]
-
-angular_velocities = [angular_velocity_0, angular_velocity_1]
-
-#
-bounce = 0.5
-friction = 0.5
-mass = 0.1
-momentum_of_intertia = np.power(1.0, 4)/12
+polygons = []
 
 #Edge normal vectors
 yNorm_floor = [0, 1, 0]
@@ -66,23 +41,76 @@ yNorm_roof = [0, -1, 0]
 xNorm_rWall = [-1, 0, 0]
 xNorm_lWall = [1, 0, 0]
 
-l = 10
-#Giving polygon points and center of mass
-polygon_vertex = np.array([[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [2.0, 1.0]])
+bounce = 0.5
+mass = 2
+momentum_of_intertia = np.power(1.0, 4)/12
+
+########################################################
 
 #Giving polygon points and center of mass
-polygon_vertex_2 = np.array([[3.0, 1.0], [3.0, 2.0], [4.0, 2.0], [4.0, 1.0]])
+polygon_vertex_0 = np.array([[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [2.0, 1.0]])
 
-polygons = [polygon_vertex, polygon_vertex_2]
+alpha_deg_0 = 180
+
+#Degrees to radians
+alpha_rad_0 = alpha_deg_0/180 * np.pi
+
+#Initial velocity and angle
+v0 = 40.0
+
+#Velocity to x and y components
+velocity_0 = [
+    v0 * np.cos(alpha_rad_0),
+    v0 * np.sin(alpha_rad_0),
+    0.0]
+
+velocities.append(velocity_0)
+
+angle_0 = [0.0]
+angles.append(angle_0)
+
+angular_velocity_0 = [0.0, 0.0, 9.0]
+angular_velocities.append(angular_velocity_0)
+
+
+
+
+#####################################################
+
+#Giving polygon points and center of mass
+polygon_vertex_1 = np.array([[3.0, 1.0], [3.0, 2.0], [4.0, 2.0], [4.0, 1.0]])
+
+alpha_deg_1 = 45
+
+#Degrees to radians
+alpha_rad_1 = alpha_deg_1/180 * np.pi
+
+#Initial velocity and angle
+v1 = 80.0
+
+#Velocity to x and y components
+velocity_1 = [
+    v1 * np.cos(alpha_deg_1),
+    v1 * np.sin(alpha_deg_1),
+    0.0]
+
+velocities.append(velocity_1)
+
+angle_1 = [0.0]
+angles.append(angle_1)
+
+angular_velocity_1 = [0.0, 0.0, -9.0]
+angular_velocities.append(angular_velocity_1)
+
+
+########################################
+
+polygons = [polygon_vertex_0, polygon_vertex_1]
+
 polygons_cm = []
 
 #Polygon center of mass set to 0,0 coordinates
 polygon_vertex_cm = np.array([[-0.5, -0.5], [-0.5, 0.5], [0.5, 0.5], [0.5, -0.5]])
-
-''' #Initialize lists
-velocities = []
-angles = []
-angular_velocities = [] '''
 
 #Initialize random parameters for each polygon in polygons list
 for i in polygons:
@@ -90,30 +118,6 @@ for i in polygons:
     x_value = 0.0
     y_value = 0.0
     m = 0.0
-
-    '''  #Random angle for each polygon
-    alpha_deg = random.randint(0, 360)
-
-    #Random velocity for each polygon
-    velocity = [
-        random.randint(0, 100) * np.cos(alpha_deg/180 * np.pi),
-        random.randint(0, 100) * np.sin(alpha_deg/180 * np.pi),
-        0.0]
-
-    #Add unique velocity for each polygon in polygon list
-    velocities.append(velocity)
-
-    #Initial angle is always 0
-    angle = [0.0]
-
-    #Add beginning angle for each polygon in polygon list
-    angles.append(angle)
-
-    #Random angular velocity between (x, y)
-    angular_velocity = [0.0, 0.0, random.uniform(0, 10)]
-
-    #Add unique angular velocity for each polygon in polygon list
-    angular_velocities.append(angular_velocity) '''
 
     #Calculation for each polygon center of mass in polygon list
     for polygon in i:
@@ -129,7 +133,9 @@ for i in polygons:
 objects = []
 
 for i in polygons:
-    objects.append(plt.Polygon(i, closed=False, color='r'))
+    color = tuple(random.uniform(0.1, 0.5) for i in range(3))
+
+    objects.append(plt.Polygon(i, closed=False, color=color))
 
 for i in objects:
     axis.add_patch(i)
@@ -162,11 +168,10 @@ def collision_calculation(
     angular_v[z_axis] += impulse/momentum_of_intertia * crossP_hitPoint_norm[z_axis]
 
     #New angle
-    ang[0] += angular_v[z_axis] * t
+    ang += angular_v[z_axis] * t
     
     return [vel, angular_v, ang]
 
-# Toista niin kauan kuin pallo maanpinnan yläpuolella
 def animate(i):
 
     global t
@@ -183,7 +188,7 @@ def animate(i):
     #Polygons new center of mass location
     for cm, velocity in zip(polygons_cm, velocities) :
         cm[x_axis] += velocity[x_axis] * t
-        cm[y_axis] += velocity[y_axis] * t #tähän vy initial ja vy keskiarvo
+        cm[y_axis] += velocity[y_axis] * t
 
     for polygon, cm, angle in zip(polygons, polygons_cm, angles):
 
@@ -225,6 +230,7 @@ def animate(i):
             if(i[x_axis] > axis_max and dot_hit_vel_xNorm_rWall < 0):
                 print("Collision with RIGHT WALL")
 
+                #Move impact point back to axis
                 move_by = i[x_axis] - axis_max
 
                 for j in polygon:
@@ -246,7 +252,8 @@ def animate(i):
             #Collision with LEFT WALL
             if i[x_axis] < axis_min and dot_hit_vel_xNorm_lWall < 0:
                 print("Collision with LEFT WALL")
-
+                
+                #Move impact point back to axis
                 move_by = axis_min - i[x_axis]
 
                 for j in polygon:
@@ -269,6 +276,7 @@ def animate(i):
             if(i[y_axis] > axis_max and dot_hit_vel_yNorm_roof < 0):
                 print("Collision with ROOF")
 
+                #Move impact point back to axis
                 move_by = i[y_axis] - axis_max
 
                 for j in polygon:
@@ -291,6 +299,7 @@ def animate(i):
             if(i[y_axis] < axis_min and dot_hit_vel_yNorm_floor < 0): 
                 print("Collision with FLOOR")
                 
+                #Move impact point back to axis
                 move_by = axis_min - i[y_axis]
 
                 for j in polygon:
@@ -310,15 +319,15 @@ def animate(i):
                 collision = True
 
             
-
-        #When collision has happened the results determine the new parameters
+            #When collision has happened the results determine the new parameters
         if  collision is True:
         
             velocity = result[0]
-            #velocity[x_axis] -= friction * mass * G
             velocity[y_axis] -= G*t
             angular_vel = result[1]
             angle = result[2]
+
+            collision = False
         #When collision has NOT happened the results are normally calculated
         else:
 
@@ -332,55 +341,49 @@ def animate(i):
     vectors = []
     collision_vector = []
 
-    for i in range(len(polygons)):
+    #Collision check with other polygons
+    for p in range(len(polygons)):
         
         for k in range(len(polygons)):
 
             for h in range(len(polygons[k])):
 
-                asd = len(polygons[k]) - 1
                 collision_check_list = []
                 collision = False
+                print("THIS ", p)
+                for j in range(len(polygons[p])):
 
-                for j in range(len(polygons[i])):
-
-                    if j < len(polygons[i]) - 1:
+                    if j < len(polygons[p]) - 1:
 
                         vector = [
-                            polygons[i][j + 1][x_axis] - polygons[i][j][x_axis],
-                            polygons[i][j + 1][y_axis] - polygons[i][j][y_axis]]
+                            polygons[p][j + 1][x_axis] - polygons[p][j][x_axis],
+                            polygons[p][j + 1][y_axis] - polygons[p][j][y_axis]]
 
                         vector_point = [
-                            polygons[k][h][x_axis] - polygons[i][j][x_axis],
-                            polygons[k][h][y_axis] - polygons[i][j][y_axis]]
+                            polygons[k][h][x_axis] - polygons[p][j][x_axis],
+                            polygons[k][h][y_axis] - polygons[p][j][y_axis]]
 
                         collision_point = [
                             polygons[k][h][x_axis],
                             polygons[k][h][y_axis],
                             0.0]
 
-                        smth = [
-                            polygons[i][j][x_axis] - collision_point[x_axis],
-                            polygons[i][j][y_axis] - collision_point[y_axis]]
-
                     else:
                         vector = [
-                            polygons[i][0][x_axis] - polygons[i][len(polygons[i]) - 1][x_axis],
-                            polygons[i][0][y_axis] - polygons[i][len(polygons[i]) - 1][y_axis]]
+                            polygons[p][0][x_axis] - polygons[p][len(polygons[p]) - 1][x_axis],
+                            polygons[p][0][y_axis] - polygons[p][len(polygons[p]) - 1][y_axis]]
 
                         vector_point = [
-                            polygons[k][h][x_axis] - polygons[i][len(polygons[i]) - 1][x_axis],
-                            polygons[k][h][y_axis] - polygons[i][len(polygons[i]) - 1][y_axis]]
+                            polygons[k][h][x_axis] - polygons[p][len(polygons[p]) - 1][x_axis],
+                            polygons[k][h][y_axis] - polygons[p][len(polygons[p]) - 1][y_axis]]
 
                         collision_point = [
                             polygons[k][h][x_axis],
                             polygons[k][h][y_axis], 0.0]
 
-                        smth = [
-                            polygons[i][j][x_axis] - collision_point[x_axis],
-                            polygons[i][j][y_axis] - collision_point[y_axis]]
-
-                    
+                    smth = [
+                        polygons[p][j][x_axis] - collision_point[x_axis],
+                        polygons[p][j][y_axis] - collision_point[y_axis]]
 
                     collision_vector.append(smth)
 
@@ -435,15 +438,15 @@ def animate(i):
                     normal_unit_vector = np.cross(unit_vector, [0.0, 0.0, -1.0])
 
                     #Center of mass point for polygon that is getting collided with
-                    cm_i = polygons_cm[i]
+                    cm_p = polygons_cm[p]
                     #Center of mass point for polygon that is colliding
                     cm_k = polygons_cm[k]
 
                     #Vector between center of mass and hitpoint for polygon 0
-                    vector_cm_hitpoint_i = [
+                    vector_cm_hitpoint_p = [
 
-                        collision_point[x_axis] - cm_i[x_axis],
-                        collision_point[y_axis] - cm_i[y_axis],
+                        collision_point[x_axis] - cm_p[x_axis],
+                        collision_point[y_axis] - cm_p[y_axis],
                         0.0
                     ]
                     #Vector between center of mass and hitpoint for polygon 1
@@ -454,40 +457,51 @@ def animate(i):
                         0.0
                     ]
 
-                    crossP_hit_norm_i = np.cross(vector_cm_hitpoint_i, normal_unit_vector)
+                    crossP_hit_norm_p = np.cross(vector_cm_hitpoint_p, normal_unit_vector)
                     crossP_hit_norm_k = np.cross(vector_cm_hitpoint_k, normal_unit_vector)
                     
                     #Cross product between vector from cm to collision point and normal unit vector
-                    crossP_cm_hitpoint_norm_i = np.cross(vector_cm_hitpoint_i, normal_unit_vector)
+                    crossP_cm_hitpoint_norm_p = np.cross(vector_cm_hitpoint_p, normal_unit_vector)
                     crossP_cm_hitpoint_norm_k = np.cross(vector_cm_hitpoint_k, normal_unit_vector)
 
                     #Hitpoint velocities for polygon hitpoints
-                    point_velocity_i = velocities[i] + np.cross(angular_velocities[i], vector_cm_hitpoint_i)
+                    point_velocity_p = velocities[p] + np.cross(angular_velocities[p], vector_cm_hitpoint_p)
                     point_velocity_k = velocities[k] + np.cross(angular_velocities[k], vector_cm_hitpoint_k)
 
                     #Relative velocity
-                    relative_velocity = point_velocity_i - point_velocity_k
+                    relative_velocity = point_velocity_p - point_velocity_k
 
                     dot_relativeVelocity_norm = np.dot(relative_velocity, normal_unit_vector)
 
                     bouncyness = -(1.0 + bounce)
                     mass_divided = 1.0/mass*2.0
-                    kolmas = np.power(crossP_cm_hitpoint_norm_i[z_axis], 2) / momentum_of_intertia + np.power(crossP_cm_hitpoint_norm_k[z_axis], 2) / momentum_of_intertia
+                    kolmas = np.power(crossP_cm_hitpoint_norm_p[z_axis], 2) / momentum_of_intertia + np.power(crossP_cm_hitpoint_norm_k[z_axis], 2) / momentum_of_intertia
 
 
                     #Impact impulse
                     impulse = (bouncyness * dot_relativeVelocity_norm) / (mass_divided + kolmas)
 
                     #New velocities after impact
-                    velocities[i][x_axis] += impulse/mass * normal_unit_vector[x_axis]
-                    velocities[i][y_axis] += impulse/mass * normal_unit_vector[y_axis]
+                    velocities[p][x_axis] += impulse/mass * normal_unit_vector[x_axis]
+                    velocities[p][y_axis] += impulse/mass * normal_unit_vector[y_axis]
                     
                     velocities[k][x_axis] -= impulse/mass * normal_unit_vector[x_axis]
                     velocities[k][y_axis] -= impulse/mass * normal_unit_vector[y_axis]
 
                     #New angular velocities after impact
-                    angular_velocities[i][z_axis] += impulse/momentum_of_intertia * crossP_hit_norm_i[z_axis]
+                    angular_velocities[p][z_axis] += impulse/momentum_of_intertia * crossP_hit_norm_p[z_axis]
                     angular_velocities[k][z_axis] -= impulse/momentum_of_intertia * crossP_hit_norm_k[z_axis]
+
+                    #Move collision corner back to collision point
+                    offset = normal_unit_vector * distance[min_value_index]
+
+                    for f in polygons[k]:
+                        f[x_axis] += offset[x_axis]
+                        f[y_axis] += offset[y_axis]
+
+                    #Move colliding polygon cm back by offset
+                    polygons_cm[k][x_axis] += offset[x_axis]
+                    polygons_cm[k][y_axis] += offset[y_axis]
                     
                     print("COLLISION")
                     collision = False
@@ -505,4 +519,3 @@ plt.ylabel("y (m)")
 animation = animation.FuncAnimation(fig, animate, init_func=init, frames=200, interval=TSTEP * 1000, repeat=True, blit=True)
 
 plt.show()
-
