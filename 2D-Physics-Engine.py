@@ -58,7 +58,7 @@ angular_velocities = [angular_velocity_0, angular_velocity_1]
 bounce = 0.5
 friction = 0.5
 mass = 0.1
-momentum = np.power(1.0, 4)/12
+momentum_of_intertia = np.power(1.0, 4)/12
 
 #Edge normal vectors
 yNorm_floor = [0, 1, 0]
@@ -148,7 +148,7 @@ def collision_calculation(
 
     e = -(1 + bounce)
     mass_divided = 1/mass
-    kolmas = np.power(crossP_hitPoint_norm[z_axis], 2) / momentum
+    kolmas = np.power(crossP_hitPoint_norm[z_axis], 2) / momentum_of_intertia
 
 
     #Impact impulse
@@ -159,10 +159,10 @@ def collision_calculation(
     vel[y_axis] += impulse/mass * norm[y_axis]
 
     #New angular velocity and angle
-    angular_v[z_axis] = angular_v[z_axis] + impulse/momentum * crossP_hitPoint_norm[z_axis]
+    angular_v[z_axis] += impulse/momentum_of_intertia * crossP_hitPoint_norm[z_axis]
 
     #New angle
-    ang = ang + angular_v[z_axis] * t
+    ang[0] += angular_v[z_axis] * t
     
     return [vel, angular_v, ang]
 
@@ -173,7 +173,7 @@ def animate(i):
     global velocities
     global angles
     global angular_velocities
-    global momentum
+    global momentum_of_intertia
 
     t = TSTEP
     collision = False
@@ -185,15 +185,15 @@ def animate(i):
         cm[x_axis] += velocity[x_axis] * t
         cm[y_axis] += velocity[y_axis] * t #tähän vy initial ja vy keskiarvo
 
-    for polygon, cm, ang in zip(polygons, polygons_cm, angles):
+    for polygon, cm, angle in zip(polygons, polygons_cm, angles):
 
         for i,j in zip(polygon, polygon_vertex_cm):
             
             #Polygon point new location
-            i[x_axis] = j[x_axis] * np.cos(ang) - j[y_axis] * np.sin(ang) + cm[x_axis]
-            i[y_axis] = j[x_axis] * np.sin(ang) + j[y_axis] * np.cos(ang) + cm[y_axis]
+            i[x_axis] = j[x_axis] * np.cos(angle) - j[y_axis] * np.sin(angle) + cm[x_axis]
+            i[y_axis] = j[x_axis] * np.sin(angle) + j[y_axis] * np.cos(angle) + cm[y_axis]
 
-    for polygon, cm, velocity, angular_vel, ang in zip(polygons, polygons_cm, velocities, angular_velocities, angles):
+    for polygon, cm, velocity, angular_vel, angle in zip(polygons, polygons_cm, velocities, angular_velocities, angles):
 
         for i in polygon:
         
@@ -225,6 +225,13 @@ def animate(i):
             if(i[x_axis] > axis_max and dot_hit_vel_xNorm_rWall < 0):
                 print("Collision with RIGHT WALL")
 
+                move_by = i[x_axis] - axis_max
+
+                for j in polygon:
+                    j[x_axis] -= move_by
+                
+                cm[x_axis] -= move_by
+
                 result = collision_calculation(
                     coordinate=x_axis, 
                     norm=xNorm_rWall, 
@@ -232,13 +239,20 @@ def animate(i):
                     dot_hitVelocity_norm=dot_hit_vel_xNorm_rWall,
                     crossP_hitPoint_norm=crossP_hit_vector_rWall,
                     angular_v=angular_vel,
-                    ang=ang)
+                    ang=angle)
 
                 collision = True
 
             #Collision with LEFT WALL
             if i[x_axis] < axis_min and dot_hit_vel_xNorm_lWall < 0:
                 print("Collision with LEFT WALL")
+
+                move_by = axis_min - i[x_axis]
+
+                for j in polygon:
+                    j[x_axis] += move_by
+                
+                cm[x_axis] += move_by
 
                 result = collision_calculation(
                     coordinate=x_axis, 
@@ -247,13 +261,20 @@ def animate(i):
                     dot_hitVelocity_norm=dot_hit_vel_xNorm_lWall,
                     crossP_hitPoint_norm=crossP_hit_vector_lWall,
                     angular_v=angular_vel,
-                    ang=ang)
+                    ang=angle)
                     
                 collision = True
 
             #Collision with ROOF
             if(i[y_axis] > axis_max and dot_hit_vel_yNorm_roof < 0):
                 print("Collision with ROOF")
+
+                move_by = i[y_axis] - axis_max
+
+                for j in polygon:
+                    j[y_axis] -= move_by
+                
+                cm[y_axis] -= move_by
 
                 result = collision_calculation(
                     coordinate=y_axis, 
@@ -262,7 +283,7 @@ def animate(i):
                     dot_hitVelocity_norm=dot_hit_vel_yNorm_roof,
                     crossP_hitPoint_norm=crossP_hit_vector_roof,
                     angular_v=angular_vel,
-                    ang=ang)
+                    ang=angle)
 
                 collision = True
 
@@ -270,6 +291,13 @@ def animate(i):
             if(i[y_axis] < axis_min and dot_hit_vel_yNorm_floor < 0): 
                 print("Collision with FLOOR")
                 
+                move_by = axis_min - i[y_axis]
+
+                for j in polygon:
+                    j[y_axis] += move_by
+                
+                cm[y_axis] += move_by
+
                 result = collision_calculation(
                     coordinate=y_axis,  
                     norm=yNorm_floor, 
@@ -277,7 +305,7 @@ def animate(i):
                     dot_hitVelocity_norm=dot_hit_vel_yNorm_floor,
                     crossP_hitPoint_norm=crossP_hit_vector_floor,
                     angular_v=angular_vel,
-                    ang=ang)
+                    ang=angle)
             
                 collision = True
 
@@ -290,15 +318,16 @@ def animate(i):
             #velocity[x_axis] -= friction * mass * G
             velocity[y_axis] -= G*t
             angular_vel = result[1]
-            ang = result[2]
+            angle = result[2]
         #When collision has NOT happened the results are normally calculated
         else:
 
             #angular_vel[z_axis] = angular_vel[z_axis]
             velocity[x_axis] = velocity[x_axis]
             velocity[y_axis] -= G*t
-            ang[0] += angular_vel[z_axis] * t
+            angle[0] += angular_vel[z_axis] * t
 
+    #Initialize lists
     distance = []
     vectors = []
     collision_vector = []
@@ -424,6 +453,9 @@ def animate(i):
                         collision_point[y_axis] - cm_k[y_axis],
                         0.0
                     ]
+
+                    crossP_hit_norm_i = np.cross(vector_cm_hitpoint_i, normal_unit_vector)
+                    crossP_hit_norm_k = np.cross(vector_cm_hitpoint_k, normal_unit_vector)
                     
                     #Cross product between vector from cm to collision point and normal unit vector
                     crossP_cm_hitpoint_norm_i = np.cross(vector_cm_hitpoint_i, normal_unit_vector)
@@ -440,20 +472,22 @@ def animate(i):
 
                     bouncyness = -(1.0 + bounce)
                     mass_divided = 1.0/mass*2.0
-                    kolmas = np.power(crossP_cm_hitpoint_norm_i[z_axis], 2) / momentum + np.power(crossP_cm_hitpoint_norm_k[z_axis], 2) / momentum
+                    kolmas = np.power(crossP_cm_hitpoint_norm_i[z_axis], 2) / momentum_of_intertia + np.power(crossP_cm_hitpoint_norm_k[z_axis], 2) / momentum_of_intertia
 
 
                     #Impact impulse
                     impulse = (bouncyness * dot_relativeVelocity_norm) / (mass_divided + kolmas)
 
+                    #New velocities after impact
                     velocities[i][x_axis] += impulse/mass * normal_unit_vector[x_axis]
                     velocities[i][y_axis] += impulse/mass * normal_unit_vector[y_axis]
                     
                     velocities[k][x_axis] -= impulse/mass * normal_unit_vector[x_axis]
                     velocities[k][y_axis] -= impulse/mass * normal_unit_vector[y_axis]
 
-                    angular_velocities[i][z_axis] += impulse/momentum * (vector_cm_hitpoint_i[x_axis] * normal_unit_vector[y_axis] - vector_cm_hitpoint_i[y_axis] * normal_unit_vector[x_axis])
-                    angular_velocities[k][z_axis] -= impulse/momentum * (vector_cm_hitpoint_k[x_axis] * normal_unit_vector[y_axis] - vector_cm_hitpoint_k[y_axis] * normal_unit_vector[x_axis])
+                    #New angular velocities after impact
+                    angular_velocities[i][z_axis] += impulse/momentum_of_intertia * crossP_hit_norm_i[z_axis]
+                    angular_velocities[k][z_axis] -= impulse/momentum_of_intertia * crossP_hit_norm_k[z_axis]
                     
                     print("COLLISION")
                     collision = False
